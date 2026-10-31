@@ -53,6 +53,7 @@
   .kind .n { font-size: 12px; font-weight: 800; margin-top: 6px; }
   .kind .s { font-size: 12px; color: var(--dim); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .kind.no .n { color: var(--dim); }
+  .kind.dim { opacity: 0.5; }
   .kind .cnt { font-family: "Press Start 2P", monospace; font-size: 10px; color: var(--green); margin-top: 6px; }
   .find { display: flex; gap: 8px; margin-bottom: 16px; }
   .find input { flex: 1; min-width: 0; padding: 12px; font: inherit; font-size: 16px; background: var(--card); color: var(--text); border: 2px solid var(--line); }
@@ -144,7 +145,7 @@
 
     // rare catches, newest first
     const rare = document.getElementById("rare");
-    rare.innerHTML = D.rare.length ? "" : `<div class="empty">nothing rare yet — pink, purple and gold catches show up here</div>`;
+    rare.innerHTML = D.rare.length ? "" : `<div class="empty">nothing rare yet — purple, pink, red and gold catches show up here</div>`;
     for (const r of [...D.rare].reverse().slice(0, 20)) {
       const f = byId[r.fish];
       if (!f) continue;
@@ -160,9 +161,11 @@
     // who caught each kind first
     const firsts = document.getElementById("firsts");
     firsts.innerHTML = "";
-    for (const f of D.fish) {
+    for (const f of D.fish.filter((f) => f.tier !== "unique")) {  // every fish shown; the legends stay secret above
       const who = D.firsts[f.id];
-      firsts.appendChild(who ? kindCard(f, f.name, "first: " + esc(who.by)) : kindCard(f, "", "not caught yet"));
+      const card = kindCard(f, f.name, who ? "first: " + esc(who.by) : "nobody yet");
+      if (!who) card.classList.add("dim");
+      firsts.appendChild(card);
     }
 
     // leaderboards
