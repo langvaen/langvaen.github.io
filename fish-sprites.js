@@ -213,6 +213,23 @@ const BUCKET_ROWS = [
   ".oaaaao.",
   "..oooo.."];
 const BUCKET_PAL = { o: "#1b1d22", g: "#a9b4c2", a: "#6a7078" };
+// the thief gull in flight, facing right: wings up / wings down (fishing-art.html flies it over the whole screen)
+const GULL_FLY = [
+  ["...ow........ow...",
+   "...oww......oww...",
+   "....oww....oww....",
+   ".....owwwwwwo.ooo.",
+   "..ggowwwwwwwwowkwyy",
+   "...ggwwwwwwwwwwwo..",
+   ".....ooo..ooo....."],
+  [".....owwwwwwo.ooo.",
+   "..ggowwwwwwwwowkwyy",
+   "...ggwwwwwwwwwwwo..",
+   "....oww....oww....",
+   "...oww......oww...",
+   "...ow........ow...",
+   "..................."]];
+const GULL_FLY_PAL = { o: "#2a2f38", w: "#f3efe8", g: "#a9b4c2", k: "#14161a", y: "#f08a3c" };
 const CROWN = ["..y.y.y.", "..yyyyy."];  // drawn over one-of-a-kind fish
 const BASE = { o: "#1b1d22", k: "#14161a", w: "#ffffff" };
 const RARITY = { white: "#e8e8e8", lightblue: "#8fd0ff", blue: "#4f7bff", purple: "#7b3cff", pink: "#ff4fd8", red: "#ff3b3b",
@@ -228,7 +245,8 @@ const BIG = new Set(["red", "gold"]);  // these get the big alert in the middle 
 // how long one catch plays, ms: the cast, the strip, then the result stays. With 2+ more catches waiting a plain
 // one goes fast, so the screen keeps up with the chat; red and gold always get their full show.
 // fishing.html (the pier) and fishing-art.html (the alerts) both use this, so they stay in step.
-const DUEL_TIMES = { cast: 0, spin: 4200, hold: 3500 };  // a fishing duel: six fish shown one by one, then the result
+// a fishing duel: six slot reels spin, stop one by one (2.2 s apart), then the result and the voice
+const DUEL_TIMES = { cast: 0, spin: 15000, hold: 5000 };
 function playTimes(e, waiting) { return e.type === "fishduel" ? DUEL_TIMES : catchTimes(e.fish, waiting); }
 function catchTimes(fish, waiting) {
   const tier = tierOf(fish);
