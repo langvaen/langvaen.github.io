@@ -147,7 +147,72 @@ const SHAPES = {
     "oaaaoaaaaaaaao",
     ".ooo.ooooaoaoo",
     ".........o.o.."],
+  // the easter-egg legends
+  sock: [
+    "..oooooo....",
+    "..obbbbo....",
+    "..oaaaao....",
+    "..obbbbo....",
+    "..oaaaao....",
+    "..oaaaao....",
+    "..oaaaao....",
+    "..oaaaaoooo.",
+    ".oaaaaaaaaao",
+    ".oaaaaaaaccco",
+    ".occcaaaaccco",
+    "..ooooooooo."],
+  stare: [
+    "....oooooooo....",
+    "..ooaaaaaaaaoo.o",
+    ".owwwwawwwwaaooc",
+    "owwkkwwwkkwwaocc",
+    "owwkkwwwkkwwaocc",
+    ".owwwwawwwwaaooc",
+    "..obbbbbbbbbbo.o",
+    "...ooookkoooo..."],
+  duck: [
+    "...oooo.......",
+    "..oaaaao......",
+    "..oakaao......",
+    "oocoaaao......",
+    "occcaaao..oo..",
+    ".oooaaaooooao.",
+    "...oaaaaaaaaao",
+    "..oaabbbbbaaao",
+    "..oaaaaaaaaao.",
+    "...ooooooooo.."],
+  pad: [
+    "..oooooooooooo..",
+    ".oaaaaaaaaaaaao.",
+    "oaaboaaaaaaccaao",
+    "oabbboaaaacaacao",
+    "oaaboaaaaaaccaao",
+    "oaaaaaaaaaaaaaao",
+    "oaaaooooooooaaao",
+    ".oaao......oaao.",
+    "..oo........oo.."],
 };
+// the boss fish (shown big over the pier) and the bucket by every angler
+const BOSS_ROWS = [
+  "..........oo................",
+  ".........oaao...............",
+  "........oaaaao..............",
+  "....ooooaaaaaaoooooooo...oo.",
+  "..ooaaaaaaaaaaaaaaaaaaoo.oao",
+  ".oaaraaaaaaaaaaaaaaaaaaaooaao",
+  "oawwaaaaaaaaaaaaaaaaaaaaaaao.",
+  ".owbwbbbbbbbbbbbbbbbbbbbaooao",
+  "..oobbbbbbbbbbbbbbbbbboo.oao",
+  "....oooooooooooooooooo....oo"];
+const BOSS_PAL = { o: "#05070a", a: "#22323e", b: "#5a7a8a", r: "#ff3b3b", w: "#f3efe8" };
+const BUCKET_ROWS = [
+  ".oooooo.",
+  "oggggggo",
+  ".oaaaao.",
+  ".oaaaao.",
+  ".oaaaao.",
+  "..oooo.."];
+const BUCKET_PAL = { o: "#1b1d22", g: "#a9b4c2", a: "#6a7078" };
 const CROWN = ["..y.y.y.", "..yyyyy."];  // drawn over one-of-a-kind fish
 const BASE = { o: "#1b1d22", k: "#14161a", w: "#ffffff" };
 const RARITY = { white: "#e8e8e8", lightblue: "#8fd0ff", blue: "#4f7bff", purple: "#7b3cff", pink: "#ff4fd8", red: "#ff3b3b",
@@ -163,6 +228,8 @@ const BIG = new Set(["red", "gold"]);  // these get the big alert in the middle 
 // how long one catch plays, ms: the cast, the strip, then the result stays. With 2+ more catches waiting a plain
 // one goes fast, so the screen keeps up with the chat; red and gold always get their full show.
 // fishing.html (the pier) and fishing-art.html (the alerts) both use this, so they stay in step.
+const DUEL_TIMES = { cast: 0, spin: 4200, hold: 3500 };  // a fishing duel: six fish shown one by one, then the result
+function playTimes(e, waiting) { return e.type === "fishduel" ? DUEL_TIMES : catchTimes(e.fish, waiting); }
 function catchTimes(fish, waiting) {
   const tier = tierOf(fish);
   if (tier === "gold") return { cast: 900, spin: 3500, hold: 12000 };
