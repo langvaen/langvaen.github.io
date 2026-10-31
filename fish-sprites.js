@@ -1,8 +1,8 @@
 // Pixel fish for the fishing pages (fishing.html on the pier, fishing-art.html for the big alerts).
 // One letter per pixel: o outline, k black, w white, a / b / c the fish's own colors (casino.py FISH), y crown.
-// Rarity colors, cheapest to dearest: white, light blue, blue (plain catches), pink and purple (a small alert),
-// gold (the golden fish and the one-of-a-kind ones: a big alert in the middle of the stream). Before the catch
-// is known the pages show only a tier's silhouette with its price range, never the fish itself.
+// Rarity colors, cheapest to dearest: white, light blue, blue (plain catches), dark purple and bright pink (a small
+// alert), red (the dearest ones that can be caught again and again: a big alert in the middle of the stream) and
+// gold: only the one-of-a-kind fish, each caught once ever (the biggest alert).
 
 const SHAPES = {
   fish: [
@@ -150,13 +150,16 @@ const SHAPES = {
 };
 const CROWN = ["..y.y.y.", "..yyyyy."];  // drawn over one-of-a-kind fish
 const BASE = { o: "#1b1d22", k: "#14161a", w: "#ffffff" };
-const RARITY = { white: "#e8e8e8", lightblue: "#8fd0ff", blue: "#4f7bff", pink: "#ff5ad1", purple: "#9b5cff", gold: "#f0c030" };
+const RARITY = { white: "#e8e8e8", lightblue: "#8fd0ff", blue: "#4f7bff", purple: "#7b3cff", pink: "#ff4fd8", red: "#ff3b3b",
+  gold: "#f0c030" };
 const TIERS = Object.keys(RARITY);
 
 const fishPal = (f) => ({ ...BASE, a: f.colors[0], b: f.colors[1], c: f.colors[2] });
 const width = (rows) => Math.max(...rows.map((r) => r.length));
-const tierOf = (f) => (f.tier === "unique" || f.price >= 500 ? "gold" : f.price >= 100 ? "purple" : f.price >= 30 ? "pink"
+// gold = one of a kind; the rest by price: red 500+, pink 100+, purple 30+, blue 10+, light blue 3+, white
+const tierOf = (f) => (f.tier === "unique" ? "gold" : f.price >= 500 ? "red" : f.price >= 100 ? "pink" : f.price >= 30 ? "purple"
   : f.price >= 10 ? "blue" : f.price >= 3 ? "lightblue" : "white");
+const BIG = new Set(["red", "gold"]);  // these get the big alert in the middle of the stream
 const priceColor = (f) => RARITY[tierOf(f)];
 // "2–5", "300", and for gold "500–?" (nobody knows how much the dearest one is worth)
 function tierRange(tier) {
