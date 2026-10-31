@@ -1,0 +1,349 @@
+// Pixel fish for the fishing pages (fishing.html on the pier, fishing-art.html for the big alerts).
+// One letter per pixel: o outline, k black, w white, a / b / c the fish's own colors (casino.py FISH), y crown.
+// Rarity colors, cheapest to dearest: white, light blue, blue (plain catches), pink and purple (a small alert),
+// gold (the golden fish and the one-of-a-kind ones: a big alert in the middle of the stream). Before the catch
+// is known the pages show only a tier's silhouette with its price range, never the fish itself.
+
+const SHAPES = {
+  fish: [
+    ".....occo.......",
+    "...oooaaooo..oo.",
+    "..oaaaaaaaaooco.",
+    ".oawkaaaaaaaocco",
+    "oaaaaaaaaaaaacco",
+    ".obbbbbbbbbbocco",
+    "..obbbbbbbbo.oco",
+    "...oooccooo...oo"],
+  small: [
+    "...oooo.....",
+    ".ooaaaaoo.o.",
+    "okaaaaaaaoco",
+    "obbbbbbbbocc",
+    ".oobbbboo.o.",
+    "...oooo....."],
+  tall: [
+    "....oc......",
+    "...oaco.....",
+    "..oaaaao....",
+    ".oaaaaaao...",
+    "owkaaaaaaooo",
+    "oaaaaaaaaocc",
+    "obbbbbbbbocc",
+    ".obbbbbbbooo",
+    "..obbbbbo...",
+    "...obcbo....",
+    "....oco....."],
+  long: [
+    "..oooooooooooooooo.....",
+    ".okaaaaaaaaaaaaaaaoo.o.",
+    "oaaaaaaaaaaaaaaaaaaaoco",
+    "obbbbbbbbbbbbbbbbbbbocc",
+    ".oobbbbbbbbbbbbbbboo.o.",
+    "...ooooooooooooooo....."],
+  boot: [
+    "..oooooo....",
+    "..occcco....",
+    "..oaaaao....",
+    "..oaaaao....",
+    "..oaaaao....",
+    "..oaaaao....",
+    "..oaaaaooooo",
+    ".oaaaaaaaaao",
+    ".oaaaaaaaaao",
+    ".obbbbbbbbbo",
+    "..ooooooooo."],
+  can: [
+    ".oooooo.",
+    "obbbbbbo",
+    "oaaaaaao",
+    "oacccaao",
+    "oacccaao",
+    "oaaaaaao",
+    "oaaaaaao",
+    "obbbbbbo",
+    ".oooooo."],
+  bottle: [
+    "..oo..",
+    "..cc..",
+    "..oo..",
+    ".oaao.",
+    "oaaaao",
+    "oabaao",
+    "oabaao",
+    "oaaaao",
+    "oaaaao",
+    ".oooo."],
+  round: [
+    "...c.c.c....",
+    "..oooooooo..",
+    ".oaaaaaaaao.",
+    "okwaaaaaaaao",
+    "oaaaaaaaaaaoc",
+    "oaabbbbbbaaocc",
+    "oabbbbbbbbaoc",
+    ".obbbbbbbbo.",
+    "..oooooooo..",
+    "...c.c.c...."],
+  flat: [
+    ".......oo.......",
+    ".....ooaaoo.....",
+    "...ooaaaaaaoo...",
+    ".ooaakaaaakaaoo.",
+    "oaaaaaaaaaaaaaao",
+    ".ooaaaaaaaaaaoo.",
+    "...oobbbbbboo...",
+    ".......oo.......",
+    ".......c........",
+    "........c......."],
+  crab: [
+    ".oo........oo.",
+    "oaao......oaao",
+    "oao........oao",
+    ".oa.oooooo.ao.",
+    "..oaakaakaao..",
+    ".oaaaaaaaaaao.",
+    "..oabbbbbbao..",
+    ".o.o.o..o.o.o.",
+    "o..o......o..o"],
+  star: [
+    ".....o.....",
+    "....oao....",
+    "....oao....",
+    "oooooaooooo",
+    ".oaaaaaaao.",
+    "..oakakao..",
+    "..oaaaaao..",
+    ".oaaoooaao.",
+    ".oao...oao.",
+    "oo.......oo"],
+  squid: [
+    "....oo....",
+    "...oaao...",
+    "..oaaaao..",
+    ".oaaaaaao.",
+    ".oaaaaaao.",
+    ".okaaaakao",
+    ".oaaaaaao.",
+    ".obbbbbbo.",
+    ".oaoaaoao.",
+    ".oa.oo.ao.",
+    ".o..oa..o.",
+    "....o....."],
+  chest: [
+    "..oooooooooo..",
+    ".oaaaaaaaaaao.",
+    "oaaaaaaaaaaaao",
+    "occcccccccccco",
+    "oaaaaabbaaaaao",
+    "oaaaaobboaaaao",
+    "oaaaaabbaaaaao",
+    "oaaaaaaaaaaaao",
+    "occcccccccccco",
+    ".oooooooooooo."],
+  key: [
+    ".ooo..........",
+    "oaaao.........",
+    "oabaoooooooooo",
+    "oaaaoaaaaaaaao",
+    ".ooo.ooooaoaoo",
+    ".........o.o.."],
+};
+const CROWN = ["..y.y.y.", "..yyyyy."];  // drawn over one-of-a-kind fish
+const BASE = { o: "#1b1d22", k: "#14161a", w: "#ffffff" };
+const RARITY = { white: "#e8e8e8", lightblue: "#8fd0ff", blue: "#4f7bff", pink: "#ff5ad1", purple: "#9b5cff", gold: "#f0c030" };
+const TIERS = Object.keys(RARITY);
+
+const fishPal = (f) => ({ ...BASE, a: f.colors[0], b: f.colors[1], c: f.colors[2] });
+const width = (rows) => Math.max(...rows.map((r) => r.length));
+const tierOf = (f) => (f.tier === "unique" || f.price >= 500 ? "gold" : f.price >= 100 ? "purple" : f.price >= 30 ? "pink"
+  : f.price >= 10 ? "blue" : f.price >= 3 ? "lightblue" : "white");
+const priceColor = (f) => RARITY[tierOf(f)];
+// "2–5", "300", and for gold "500–?" (nobody knows how much the dearest one is worth)
+function tierRange(tier) {
+  const p = (window.FISH || []).filter((f) => tierOf(f) === tier).map((f) => f.price);
+  if (!p.length) return "";
+  const lo = Math.min(...p), hi = Math.max(...p);
+  return tier === "gold" ? `${lo}–?` : lo === hi ? `${lo}` : `${lo}–${hi}`;
+}
+// a tier's fish silhouette: one color with a darker outline, a "?" goes on top in the page
+function silhouette(tier, scale) {
+  const c = RARITY[tier];
+  const dark = "#" + [1, 3, 5].map((i) => Math.round(parseInt(c.slice(i, i + 2), 16) * 0.45).toString(16).padStart(2, "0")).join("");
+  return spriteCanvas(SHAPES.fish, { o: dark, k: c, w: c, a: c, b: c, c: c }, scale);
+}
+
+function drawRows(ctx, rows, pal, x, y, flip = false, scale = 1) {
+  const w = width(rows);
+  rows.forEach((r, j) => {
+    for (let i = 0; i < r.length; i++) {
+      const col = pal[r[i]];
+      if (!col) continue;
+      ctx.fillStyle = col;
+      ctx.fillRect((x + (flip ? w - 1 - i : i)) * scale, (y + j) * scale, scale, scale);
+    }
+  });
+}
+function spriteCanvas(rows, pal, scale) {
+  const c = document.createElement("canvas");
+  c.className = "px";
+  c.style.imageRendering = "pixelated";
+  c.width = width(rows) * scale;
+  c.height = rows.length * scale;
+  drawRows(c.getContext("2d"), rows, pal, 0, 0, false, scale);
+  return c;
+}
+// ---- anglers: 16x24, facing right (the pier mirrors the left side) ----
+// The free one is built from parts: the body (s skin, h hair, k eyes, m mouth, c coat, d its shade, z belt,
+// p pants, b boots), then a hat; every chatter gets a look from their login. Bought skins (casino.py
+// ANGLER_SKINS, !skin) are whole sprites of the same size, the hand that holds the rod at (13, 13).
+const BODY = [
+  "................",
+  "................",
+  "................",
+  ".....hhhhhh.....",
+  "....hhhhhhhh....",
+  "....hsssssss....",
+  "....hssksssk....",
+  "....hsssssss....",
+  "....hssssssss...",
+  ".....sssssms....",
+  "......ssss......",
+  ".....cccccc.....",
+  "....cccccccc....",
+  "...dccccccccss..",
+  "...dcccccccsss..",
+  "...dcccccccc....",
+  "....cccccccc....",
+  "....zzzzzzzz....",
+  "....pppppppp....",
+  "....ppp..ppp....",
+  "....ppp..ppp....",
+  "....bbb..bbb....",
+  "...bbbb..bbbb...",
+  "................"];
+const HATS = {
+  hardhat: ["", "......yyyy......", ".....yyyyyy.....", "....yyyyyyyy....", "...yyyyyyyyyyy.."],
+  cap: ["", "", ".....aaaaaa.....", "....aaaaaaaa....", "....aaaaaaaaaaa."],
+  beanie: ["", ".......w........", ".....aaaaaa.....", "....aaaaaaaa....", "....wwwwwwww...."],
+  bucket: ["", "", ".....aaaaaa.....", ".....aaaaaa.....", "...aaaaaaaaaa..."],
+  none: [],
+};
+const SKIN_TONES = ["#f1c27d", "#ffdbac", "#e0ac69", "#c68642", "#8d5524"];
+const HAIRS = ["#3a2a1a", "#7a4a24", "#d8b060", "#1b1d22", "#b84a2a", "#9aa3ad"];
+const HAT_KINDS = ["hardhat", "cap", "beanie", "bucket", "none"];
+const COATS = ["#f5c542", "#e8553d", "#3d8fe8", "#4fbf6a", "#b06bd6", "#f08a3c", "#e86ab0", "#5fd3d3"];
+const shade = (hex) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * 0.72).toString(16).padStart(2, "0")).join("");
+const hashOf = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+function lookOf(login) {  // the same login always gets the same look
+  let h = hashOf(login);
+  const pick = (arr) => { const v = arr[h % arr.length]; h = Math.floor(h / arr.length) + 13; return v; };
+  return { coat: pick(COATS), skin: pick(SKIN_TONES), hair: pick(HAIRS), hat: pick(HAT_KINDS), hatColor: pick(COATS) };
+}
+const SKIN_SPRITES = {
+  cat: {
+    rows: [
+      "................",
+      "................",
+      "................",
+      "....o......o....",
+      "...oao....oao...",
+      "...oaaoooooaao..",
+      "...oaaaaaaaaao..",
+      "...oaaawaaawao..",
+      "...oaaakaaakao..",
+      "...oaaaapaaaao..",
+      "....oaaawwaao...",
+      ".....oaaaaao....",
+      "....oaaaaaaao...",
+      "...oaaabbbaaaa..",
+      "...oaaabbbaaaa..",
+      "...oaaabbbaao...",
+      "....oaaaaaao....",
+      "....oaaaaaao..o.",
+      "....oaao.oaaooao",
+      "....oaao.oao.oa.",
+      "....oaao.oao....",
+      "...oaaao.oaao...",
+      "...ooooo.oooo...",
+      "................"],
+    pal: { o: "#3a2a1a", a: "#f08a3c", b: "#ffd8b0", w: "#ffffff", k: "#14161a", p: "#ff8fa0" },
+  },
+  donutdad: {  // a bald yellow dad in a white shirt
+    rows: [
+      "................",
+      "................",
+      "......k.k.......",
+      ".....ssssss.....",
+      "....ssssssss....",
+      "....sssswwsww...",
+      "....ssssswkswk..",
+      "....sssssssssss.",
+      "....ssssssssss..",
+      "....sbbbbbbbs...",
+      "....bbbmmmbb....",
+      ".....bbbbbb.....",
+      "....wwwwwwww....",
+      "...wwwwwwwwwss..",
+      "...wwwwwwwwsss..",
+      "...wwwwwwwww....",
+      "....wwwwwwww....",
+      "....pppppppp....",
+      "....pppppppp....",
+      "....ppp..ppp....",
+      "....ppp..ppp....",
+      "....ppp..ppp....",
+      "...kkkk..kkkk...",
+      "................"],
+    pal: { s: "#ffd90f", b: "#c8a878", w: "#ffffff", k: "#14161a", m: "#8a3a3a", p: "#4a7ad8" },
+  },
+  darklord: {  // a black helmet, a cape and the blinking chest panel
+    rows: [
+      "................",
+      "................",
+      ".....oooooo.....",
+      "....ohkkkkko....",
+      "...ohhkkkkkko...",
+      "...okkgkkgkko...",
+      "...okkkkkkkko...",
+      "...okkkmmkkko...",
+      "..okkkkmmkkkko..",
+      "..okkkkkkkkkko..",
+      "...oooooooooo...",
+      "..cckkkkkkkkcc..",
+      ".cckkkkkkkkkkcc.",
+      ".ckkkrvbkkkkkss.",
+      ".ckkkkkkkkkkkss.",
+      ".ckkkkzzzzkkkc..",
+      ".cckkkkkkkkkkc..",
+      ".cc.kkkkkkkk.c..",
+      "....kkk..kkk....",
+      "....kkk..kkk....",
+      "....kkk..kkk....",
+      "...kkkk..kkkk...",
+      "...kkkk..kkkk...",
+      "................"],
+    pal: { o: "#000000", k: "#1b1d22", h: "#4a5060", g: "#3a3f48", m: "#5a6068", c: "#2a1a24", r: "#e8402a",
+      v: "#4fbf6a", b: "#3d8fe8", z: "#a9b4c2", s: "#3a3f48" },
+  },
+};
+// draws one angler: their bought skin, or the free one in their own look
+function drawAnglerSprite(ctx, login, skin, x, y, flip = false, scale = 1) {
+  const own = SKIN_SPRITES[skin];
+  if (own) return drawRows(ctx, own.rows, own.pal, x, y, flip, scale);
+  const L = lookOf(login);
+  drawRows(ctx, BODY, { ...BASE, s: L.skin, h: L.hair, m: "#8a3a3a", c: L.coat, d: shade(L.coat), z: "#2a2320",
+    p: "#3a3a48", b: "#2a2a30" }, x, y, flip, scale);
+  drawRows(ctx, HATS[L.hat], { y: "#f5c542", a: L.hatColor, w: "#f3efe8" }, x, y, flip, scale);
+}
+function anglerCanvas(login, skin, scale) {
+  const c = document.createElement("canvas");
+  c.className = "px";
+  c.style.imageRendering = "pixelated";
+  c.width = 16 * scale;
+  c.height = 24 * scale;
+  drawAnglerSprite(c.getContext("2d"), login, skin, 0, 0, false, scale);
+  return c;
+}
+
+const fishRows = (f) => (f.tier === "unique" ? [...CROWN, ...(SHAPES[f.shape] || SHAPES.fish)] : SHAPES[f.shape] || SHAPES.fish);
+const fishCanvas = (f, scale) => spriteCanvas(fishRows(f), { ...fishPal(f), y: "#f0c030" }, scale);
