@@ -93,7 +93,8 @@
     <div id="mine"></div>
   </section>
 </main>
-<footer>Fish on <a href="https://twitch.tv/langvaen">twitch.tv/langvaen</a>: type <b>!cast</b> in chat. Updates every few minutes during the stream.</footer>
+<footer>Fish on <a href="https://twitch.tv/langvaen">twitch.tv/langvaen</a>: type <b>!cast</b> in chat. 🍀 Every stream in a row
+  you write in chat: +10% luck for rare fish (up to +100%); a missed stream costs 30%. Updates every few minutes during the stream.</footer>
 <script src="fish-sprites.js"></script>
 <script>
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -179,6 +180,8 @@
       board("BEST FISHERS · COINS FISHED", [...fishers].sort((a, b) => b.total - a.total), (p) => p.total)
       + board("COLLECTORS · KINDS CAUGHT", [...fishers].sort((a, b) => kinds(b) - kinds(a)), (p) => `${kinds(p)}/${D.fish.length}`)
       + board("MOST CASTS", [...fishers].sort((a, b) => b.casts - a.casts), (p) => p.casts)
+      + board("MOST LOYAL · 🍀 STREAK", P.filter((p) => p.streak).sort((a, b) => b.streak - a.streak || b.best_streak - a.best_streak),
+        (p) => `🍀${p.streak} · +${Math.min(p.streak, 10) * 10}%`)
       + board("RICHEST", P.filter((p) => !D.not_in_rich_top.includes(p.login)).sort((a, b) => b.coins - a.coins), (p) => p.coins.toLocaleString("en-US"));
     document.querySelectorAll(".board .nm").forEach((n) => (n.onclick = () => openAlbum(n.dataset.u)));
 
@@ -202,6 +205,8 @@
     head.insertAdjacentHTML("beforeend", `<div class="stats"><h3>${esc(p.name)}</h3>
       <div class="stat"><span>kinds caught</span><b>${Object.keys(p.catch).length}/${D.fish.length}</b></div>
       <div class="stat"><span>casts</span><b>${p.casts}</b></div>
+      <div class="stat"><span>🍀 streak · luck</span><b>${p.streak || 0} · +${Math.min(p.streak || 0, 10) * 10}%</b></div>
+      <div class="stat"><span>best streak</span><b>${p.best_streak || 0}</b></div>
       <div class="stat"><span>fished out</span><b>${p.total}</b></div>
       <div class="stat"><span>coins</span><b>${p.coins.toLocaleString("en-US")}</b></div></div>`);
     mine.appendChild(head);
