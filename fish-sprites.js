@@ -160,6 +160,15 @@ const width = (rows) => Math.max(...rows.map((r) => r.length));
 const tierOf = (f) => (f.tier === "unique" ? "gold" : f.price >= 500 ? "red" : f.price >= 100 ? "pink" : f.price >= 30 ? "purple"
   : f.price >= 10 ? "blue" : f.price >= 3 ? "lightblue" : "white");
 const BIG = new Set(["red", "gold"]);  // these get the big alert in the middle of the stream
+// how long one catch plays, ms: the cast, the strip, then the result stays. With 2+ more catches waiting a plain
+// one goes fast, so the screen keeps up with the chat; red and gold always get their full show.
+// fishing.html (the pier) and fishing-art.html (the alerts) both use this, so they stay in step.
+function catchTimes(fish, waiting) {
+  const tier = tierOf(fish);
+  if (tier === "gold") return { cast: 900, spin: 3500, hold: 12000 };
+  if (tier === "red") return { cast: 900, spin: 3500, hold: 7000 };
+  return waiting >= 2 ? { cast: 400, spin: 1800, hold: 800 } : { cast: 900, spin: 3500, hold: 1800 };
+}
 const priceColor = (f) => RARITY[tierOf(f)];
 // "2–5", "300", and for gold "500–?" (nobody knows how much the dearest one is worth)
 function tierRange(tier) {
