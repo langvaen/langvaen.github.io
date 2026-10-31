@@ -213,23 +213,26 @@ const BUCKET_ROWS = [
   ".oaaaao.",
   "..oooo.."];
 const BUCKET_PAL = { o: "#1b1d22", g: "#a9b4c2", a: "#6a7078" };
-// the thief gull in flight, facing right: wings up / wings down (fishing-art.html flies it over the whole screen)
+// the thief gull: the same little gull as on the pier (facing left), two frames where only the wing moves a pixel
+// (fishing-art.html flies it over the whole screen)
 const GULL_FLY = [
-  ["...ow........ow...",
-   "...oww......oww...",
-   "....oww....oww....",
-   ".....owwwwwwo.ooo.",
-   "..ggowwwwwwwwowkwyy",
-   "...ggwwwwwwwwwwwo..",
-   ".....ooo..ooo....."],
-  [".....owwwwwwo.ooo.",
-   "..ggowwwwwwwwowkwyy",
-   "...ggwwwwwwwwwwwo..",
-   "....oww....oww....",
-   "...oww......oww...",
-   "...ow........ow...",
-   "..................."]];
-const GULL_FLY_PAL = { o: "#2a2f38", w: "#f3efe8", g: "#a9b4c2", k: "#14161a", y: "#f08a3c" };
+  ["...ooo....",
+   "..owwwo...",
+   ".yowkwo...",
+   "..owwwwo..",
+   "..owwgggo.",
+   "...owwgggo",
+   "....owwwo.",
+   ".....oyo.."],
+  ["...ooo....",
+   "..owwwo...",
+   ".yowkwo...",
+   "..owwgggo.",
+   "..owwwgggo",
+   "...owwwwo.",
+   "....owwwo.",
+   ".....oyo.."]];
+const GULL_FLY_PAL = { o: "#1b1d22", w: "#ffffff", g: "#a9b4c2", k: "#14161a", y: "#f08a3c" };
 const CROWN = ["..y.y.y.", "..yyyyy."];  // drawn over one-of-a-kind fish
 const BASE = { o: "#1b1d22", k: "#14161a", w: "#ffffff" };
 const RARITY = { white: "#e8e8e8", lightblue: "#8fd0ff", blue: "#4f7bff", purple: "#7b3cff", pink: "#ff4fd8", red: "#ff3b3b",
