@@ -47,6 +47,8 @@
   .rare { display: flex; flex-direction: column; gap: 6px; }
   .rare .row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; background: var(--card); border-left: 4px solid var(--c); font-size: 15px; }
   .rare .row .t { color: var(--dim); font-size: 13px; margin-left: auto; white-space: nowrap; }
+  .rare .day { color: var(--dim); font-size: 13px; margin-top: 8px; }
+  .rare .day:first-child { margin-top: 0; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; }
   .kind { background: var(--card); border: 2px solid var(--line); border-bottom: 4px solid var(--c); padding: 10px 6px 8px; text-align: center; min-height: 112px; }
   .kind .art { height: 52px; display: flex; align-items: center; justify-content: center; }
@@ -99,6 +101,7 @@
 <script>
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const when = (t) => (t ? new Date(t * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "long ago");
+  const clock = (t) => (t ? new Date(t * 1000).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "");
   const big = (f, h) => fishCanvas(f, Math.max(1, Math.floor(Math.min(h / fishRows(f).length, (h * 2.2) / width(fishRows(f))))));
   let D = null, byId = {};
 
@@ -144,18 +147,24 @@
       leg.appendChild(c);
     }
 
-    // rare catches, newest first
+    // rare catches, newest first, by day
     const rare = document.getElementById("rare");
     rare.innerHTML = D.rare.length ? "" : `<div class="empty">nothing rare yet — purple, pink, red and gold catches show up here</div>`;
-    for (const r of [...D.rare].reverse().slice(0, 20)) {
+    let lastDay = "";
+    for (const r of [...D.rare].sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 30)) {
       const f = byId[r.fish];
       if (!f) continue;
+      const day = when(r.at);
+      if (day !== lastDay) {  // a heading for each day, the row itself shows the time
+        rare.insertAdjacentHTML("beforeend", `<div class="day">${esc(day)}</div>`);
+        lastDay = day;
+      }
       const row = document.createElement("div");
       row.className = "row";
       row.style.setProperty("--c", priceColor(f));
       row.appendChild(big(f, 22));
       row.insertAdjacentHTML("beforeend", `<span><b>${esc(r.name)}</b> caught <b style="color:${priceColor(f)}">${esc(f.name)}</b></span>
-        <span class="t">${when(r.at)}</span>`);
+        <span class="t">${clock(r.at)}</span>`);
       rare.appendChild(row);
     }
 
