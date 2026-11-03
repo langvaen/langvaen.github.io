@@ -510,6 +510,35 @@ SKIN_SPRITES.fishman = {  // a fish on legs, a fin for a hand
     "................"],
   pal: { o: "#1b2a3a", a: "#3d8fe8", b: "#8fd0ff", c: "#f08a3c", w: "#ffffff", k: "#14161a", p: "#f08a3c" },
 };
+SKIN_SPRITES.detective = {  // a boy detective: spiky hair, big round glasses, blue blazer, red bow tie, shorts
+  rows: [
+    "................",
+    ".......h........",
+    "......hh........",
+    ".....hhhhhh.....",
+    "....hhhhhhhh....",
+    "...hhhhhhhhhh...",
+    "...hhshhshhsh...",
+    "...hgggsgggsh...",
+    "...hgwkgwkgs....",
+    "...hgggsgggs....",
+    "....ssssmsss....",
+    ".....sssss......",
+    "....cwwwwwc.....",
+    "...ccrrqrrccss..",
+    "...ccrwwwrccss..",
+    "...cccwwwccc....",
+    "....cccwcccc....",
+    "....pppppppp....",
+    "....ppp..ppp....",
+    "....sss..sss....",
+    "....www..www....",
+    "....www..www....",
+    "...bbbb..bbbb...",
+    "................"],
+  pal: { h: "#2a2a34", s: "#ffdbac", g: "#4a5262", w: "#ffffff", k: "#14161a", m: "#a0504a",
+    c: "#2f5fb8", r: "#e8302a", q: "#9a1a18", p: "#5a6070", b: "#6a3a22" },
+};
 // draws one angler: their bought skin, or the free one in their own look
 function drawAnglerSprite(ctx, login, skin, x, y, flip = false, scale = 1) {
   const own = SKIN_SPRITES[skin];
