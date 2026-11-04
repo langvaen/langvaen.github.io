@@ -153,6 +153,9 @@
   }
 
   function render(again) {
+    // the album and the firsts go by color (white → gold), then by price; the bonus items close their color
+    const rank = (f) => [TIERS.indexOf(tierOf(f)), (f.tier || "").startsWith("bonus:") ? 1 : 0, f.price];
+    D.fish.sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; });
     window.FISH = D.fish;
     byId = Object.fromEntries(D.fish.map((f) => [f.id, f]));
     document.getElementById("updated").textContent = "updated " + new Date(D.updated * 1000).toLocaleString();
