@@ -147,6 +147,89 @@ const SHAPES = {
     "oaaaoaaaaaaaao",
     ".ooo.ooooaoaoo",
     ".........o.o.."],
+  // more junk and tiddlers (2026-11-04)
+  hook: [
+    "...oo...",
+    "...oao..",
+    "...oao..",
+    "...oao..",
+    "...oao..",
+    "o..oao..",
+    "oo.oao..",
+    "oao.oao.",
+    ".oaaaao.",
+    "..oooo.."],
+  seaweed: [
+    "....o.....",
+    "...oao.o..",
+    "...oaoobo.",
+    "..oao.obo.",
+    "..oao.obo.",
+    "..oaoobo..",
+    "...oaobo..",
+    "..oaoobo..",
+    "..oao.obo.",
+    "..ocooocc.",
+    ".occcccccc"],
+  stick: [
+    "...oooooooo...",
+    "..oaaabaaaaoo.",
+    ".oaabaaaabaaao",
+    "oaaaaaabaaaao.",
+    ".oocooooooo..."],
+  shell: [
+    "....oo....",
+    "..ooaaoo..",
+    ".oabababo.",
+    "oababababo",
+    "oababababo",
+    ".oabababo.",
+    "..occcco..",
+    "...oooo..."],
+  frog: [
+    "..oo....oo..",
+    ".owko..okwo.",
+    ".oaaaooaaao.",
+    "oaaaaaaaaaao",
+    "oabbbbbbbbao",
+    ".oaaaaaaaao.",
+    "oao.oooo.oao",
+    "oo........oo"],
+  // bonus items: an XP scroll, a four-leaf clover, a rod upgrade kit (a box with a rod)
+  scroll: [
+    ".oooooooooo.",
+    "occcccccccco",
+    ".oaaaaaaaao.",
+    ".oabbbbbbao.",
+    ".oaaaaaaaao.",
+    ".oabbbbbaao.",
+    ".oaaaaaaaao.",
+    ".oabbbbbbao.",
+    "occcccccccco",
+    ".oooooooooo."],
+  clover: [
+    "...oo.oo...",
+    "..oaaoaao..",
+    "..oaaaaao..",
+    "oo.oaaao.oo",
+    "oaaoaaaoaao",
+    "oaaaaaaaaao",
+    "oaaoaaaoaao",
+    "oo.oaaao.oo",
+    "...oobo....",
+    "....ob.....",
+    "....ob....."],
+  rodkit: [
+    "..........oo..",
+    ".........oco..",
+    "........oco...",
+    ".......oco....",
+    "..oooooooooo..",
+    ".oaaaaaaaaaao.",
+    "oaaaaabbaaaaao",
+    "oaaaaabbaaaaao",
+    "oaaaaaaaaaaaao",
+    "oooooooooooooo"],
   // the easter-egg legends
   sock: [
     "..oooooo....",
@@ -242,7 +325,9 @@ const TIERS = Object.keys(RARITY);
 const fishPal = (f) => ({ ...BASE, a: f.colors[0], b: f.colors[1], c: f.colors[2] });
 const width = (rows) => Math.max(...rows.map((r) => r.length));
 // gold = one of a kind; the rest by price: red 500+, pink 100+, purple 30+, blue 10+, light blue 3+, white
-const tierOf = (f) => (f.tier === "unique" ? "gold" : f.price >= 500 ? "red" : f.price >= 100 ? "pink" : f.price >= 30 ? "purple"
+// bonus items (casino.py "bonus:<color>": a perk instead of coins) carry their color in the tier
+const tierOf = (f) => (f.tier === "unique" ? "gold" : (f.tier || "").startsWith("bonus:") ? f.tier.slice(6)
+  : f.price >= 500 ? "red" : f.price >= 100 ? "pink" : f.price >= 30 ? "purple"
   : f.price >= 10 ? "blue" : f.price >= 3 ? "lightblue" : "white");
 const BIG = new Set(["red", "gold"]);  // these get the big alert in the middle of the stream
 // how long one catch plays, ms: the cast, the strip, then the result stays. With 2+ more catches waiting a plain
