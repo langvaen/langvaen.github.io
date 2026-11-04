@@ -67,6 +67,13 @@
   .me .stat span { color: var(--dim); font-size: 13px; }
   .me h3 { width: 100%; margin: 0; font-family: "Press Start 2P", monospace; font-size: 14px; }
   .empty { color: var(--dim); font-size: 14px; padding: 8px 0; }
+  .rulebox { font-size: 15px; line-height: 1.6; }
+  .rulebox p, .rulebox ul { margin: 0 0 6px; }
+  .rulebox a { color: var(--acc); }
+  .rt { border-collapse: collapse; width: 100%; }
+  .rt td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .rt td:first-child { white-space: nowrap; font-family: "Press Start 2P", monospace; font-size: 11px; color: var(--acc); width: 1%; }
+  @media (max-width: 560px) { .rt td:first-child { white-space: normal; } }
   .duels { display: flex; flex-direction: column; gap: 8px; }
   .duels .day { color: var(--dim); font-size: 13px; margin-top: 8px; }
   .duels .day:first-child { margin-top: 0; }
@@ -97,6 +104,7 @@
   <button data-s="tops">LEADERBOARDS</button>
   <button data-s="duels">DUELS</button>
   <button data-s="album">MY ALBUM</button>
+  <button data-s="rules">HOW TO PLAY</button>
 </nav>
 <main>
   <section id="fame" class="on">
@@ -115,6 +123,43 @@
     <h2>FISHING DUELS · HISTORY</h2>
     <div class="filter" id="duelfilter" hidden></div>
     <div class="duels" id="duellist"></div>
+  </section>
+  <section id="rules">
+    <div class="card rulebox">
+      <h2 style="margin-top:0">START IN 10 SECONDS</h2>
+      <p>Come to <a href="https://twitch.tv/langvaen">twitch.tv/langvaen</a> and type <b>!cast</b> in chat. You stand on the pier and catch a fish
+        — its price goes to your coins. Your first cast ever is always a good one. Cast again every minute.</p>
+      <h2>COMMANDS</h2>
+      <table class="rt">
+        <tr><td>!cast</td><td>fish (once a minute; the timer is by your name on the pier)</td></tr>
+        <tr><td>!net</td><td>a fish jumped out of the water? the first to type it gets the fish</td></tr>
+        <tr><td>!duel @nick 300</td><td>a fishing duel for 100–500 coins: 3 reels each, the dearer catch wins both stakes. <b>!duel 300</b> = anyone may take it</td></tr>
+        <tr><td>!ok</td><td>accept a duel (or <b>!decline</b>)</td></tr>
+        <tr><td>!me</td><td>your level, rod, coins and a link to your page here</td></tr>
+        <tr><td>!coins</td><td>your balance</td></tr>
+        <tr><td>!shop</td><td>the shop on screen (once in 5 minutes)</td></tr>
+        <tr><td>!rod buy</td><td>the next rod level: better luck for rare fish and more duel power</td></tr>
+        <tr><td>!head / !torso / !legs name</td><td>dress your angler (each part bought once); <b>!look</b> shows yours</td></tr>
+        <tr><td>!shoo</td><td>the seagull stole a catch? scare it off (10% of the fish for you)</td></tr>
+        <tr><td>GG</td><td>right after someone catches a red or gold fish — 5 to 100 coins for the cheer</td></tr>
+        <tr><td>!help</td><td>all this in one line in chat</td></tr>
+      </table>
+      <h2>FREE COINS AND LUCK</h2>
+      <ul>
+        <li>+100 coins for your first message each stream, +50 every 30 minutes in chat.</li>
+        <li>🍀 Luck streak: every stream in a row you fish, +5% luck for rare fish (up to +50%). Rods add +20% per level.</li>
+        <li>🎯 WANTED: one fish each stream pays double — see the sign under the pier.</li>
+        <li>🐟 Chat goal: when the chat catches 100 fish together, a feeding frenzy starts for everyone.</li>
+        <li>Follow the channel: your next cast has double luck. A raid starts a feeding frenzy.</li>
+      </ul>
+      <h2>RARITY</h2>
+      <p>white &lt; light blue &lt; blue &lt; <span style="color:#9b6ad6">purple</span> &lt; <span style="color:#ff4fd8">pink</span> &lt;
+        <span style="color:#ff3b3b">red</span> &lt; <span style="color:#f0c030">gold</span>. Gold fish are one of a kind: whoever catches one owns it
+        forever — it goes to LEGENDS on this page.</p>
+      <h2>DUELS</h2>
+      <p>Duel power = rod + level + luck streak; the screen shows the odds first. The one 10+ points behind gets a free re-spin of their
+        worst reel, and if they win it's an upset with a bonus.</p>
+    </div>
   </section>
   <section id="album">
     <div class="find"><input id="who" placeholder="your Twitch nickname" autocomplete="off"><button id="go">SHOW</button></div>
@@ -233,6 +278,7 @@
       if (q.get("duels")) renderDuels(q.get("duels"));
     } else if (q.get("u")) { openAlbum(q.get("u")); show("album"); }
     else if (q.has("duels")) { renderDuels(q.get("duels")); show("duels"); }
+    else if (q.has("rules")) show("rules");
   }
 
   // ---- fishing duels: who did best, then every duel, newest first, by day ----
