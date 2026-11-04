@@ -247,10 +247,15 @@ const tierOf = (f) => (f.tier === "unique" ? "gold" : f.price >= 500 ? "red" : f
 const BIG = new Set(["red", "gold"]);  // these get the big alert in the middle of the stream
 // how long one catch plays, ms: the cast, the strip, then the result stays. With 2+ more catches waiting a plain
 // one goes fast, so the screen keeps up with the chat; red and gold always get their full show.
-// fishing.html (the pier) and fishing-art.html (the alerts) both use this, so they stay in step.
-// a fishing duel: six slot reels spin, stop one by one (2.2 s apart), then the result and the voice
-const DUEL_TIMES = { cast: 0, spin: 15000, hold: 5000 };
-function playTimes(e, waiting) { return e.type === "fishduel" ? DUEL_TIMES : catchTimes(e.fish, waiting); }
+// fishing.html (the pier), fishing-art.html (the alerts) and duel.html (full-screen duels) all use this, so they stay in step.
+// a fishing duel (duel.html): the preview with both sides and the odds ("cast"), six slot reels stopping one by one
+// 2.2 s apart, bait re-spins ("spin"), then the result, UPSET and red fish ("hold")
+const DUEL_REEL_GAP = 2200, DUEL_BAIT_SPIN = 3500;
+function duelTimes(e) {
+  const bait = (e.bait || []).some(Boolean), red = (e.fish || []).flat().some((f) => BIG.has(tierOf(f)));
+  return { cast: e.sides ? 6000 : 0, spin: 15000 + (bait ? DUEL_BAIT_SPIN : 0), hold: 6000 + (red ? 3000 : 0) };
+}
+function playTimes(e, waiting) { return e.type === "fishduel" ? duelTimes(e) : catchTimes(e.fish, waiting); }
 function catchTimes(fish, waiting) {
   const tier = tierOf(fish);
   if (tier === "gold") return { cast: 900, spin: 3500, hold: 12000 };
