@@ -257,7 +257,7 @@
     if (q) filter.querySelector("button").onclick = () => { history.replaceState(null, "", "?duels"); renderDuels(); };
 
     const list = document.getElementById("duellist");
-    list.innerHTML = shown.length ? "" : `<div class="empty">no fishing duels yet — type <b>!fishduel @nick 300</b> in chat on the fishing scene</div>`;
+    list.innerHTML = shown.length ? "" : `<div class="empty">no fishing duels yet — type <b>!duel @nick 300</b> in chat on the fishing scene</div>`;
     let lastDay = "";
     for (const d of shown.slice(0, 200)) {
       const day = when(d.at);
