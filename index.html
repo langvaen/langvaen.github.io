@@ -388,11 +388,15 @@
   document.getElementById("go").onclick = () => openAlbum(document.getElementById("who").value);
   document.getElementById("who").onkeydown = (e) => { if (e.key === "Enter") openAlbum(e.target.value); };
 
-  fetch("data.json?t=" + Date.now()).then((r) => r.json()).then((d) => { D = d; render(); })
+  // the data lives on its own branch (no site rebuild for each upload): straight from raw.githubusercontent.com,
+  // the copy next to the page if that fails
+  const DATA_URL = "https://raw.githubusercontent.com/langvaen/langvaen.github.io/data/data.json";
+  const getData = () => fetch(DATA_URL + "?t=" + Date.now()).then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+    .catch(() => fetch("data.json?t=" + Date.now()).then((r) => r.json()));
+  getData().then((d) => { D = d; render(); })
     .catch(() => (document.getElementById("updated").textContent = "no data yet — it appears after the first stream with fishing"));
   // the page picks up new data by itself (the stream uploads it right after duels and big catches)
-  setInterval(() => fetch("data.json?t=" + Date.now()).then((r) => r.json())
-    .then((d) => { if (D && d.updated !== D.updated) { D = d; render(true); } }).catch(() => {}), 60000);
+  setInterval(() => getData().then((d) => { if (D && d.updated !== D.updated) { D = d; render(true); } }).catch(() => {}), 60000);
 </script>
 </body>
 </html>
