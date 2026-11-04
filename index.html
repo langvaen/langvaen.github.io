@@ -267,7 +267,7 @@
       if (day !== lastDay) { list.insertAdjacentHTML("beforeend", `<div class="day">${esc(day)}</div>`); lastDay = day; }
       const card = document.createElement("div");
       card.className = "card duel";
-      card.innerHTML = `<div class="hd"><span>⚔️ stake <b>${d.stake.toLocaleString("en-US")}</b>${d.odds ? ` · odds ${d.odds[0]}% : ${d.odds[1]}%` : ""}`
+      card.innerHTML = `<div class="hd"><span>⚔️ stake <b>${d.stake.toLocaleString("en-US")}</b>${(d.match || d.odds) ? ` · odds ${(d.match || d.odds)[0]}% : ${(d.match || d.odds)[1]}%` : ""}`
         + `${d.upset ? ` · <b>UPSET! +${d.bonus}</b>` : ""}</span><span>${clock(d.at)}</span></div>`;
       d.names.forEach((n, s) => {
         const side = document.createElement("div");
