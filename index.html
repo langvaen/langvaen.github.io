@@ -67,6 +67,25 @@
   .me .stat span { color: var(--dim); font-size: 13px; }
   .me h3 { width: 100%; margin: 0; font-family: "Press Start 2P", monospace; font-size: 14px; }
   .empty { color: var(--dim); font-size: 14px; padding: 8px 0; }
+  .duels { display: flex; flex-direction: column; gap: 8px; }
+  .duels .day { color: var(--dim); font-size: 13px; margin-top: 8px; }
+  .duels .day:first-child { margin-top: 0; }
+  .duel { padding: 10px 12px; }
+  .duel .hd { display: flex; justify-content: space-between; gap: 10px; color: var(--dim); font-size: 13px; margin-bottom: 6px; }
+  .duel .hd b { color: var(--acc); font-weight: 800; }
+  .duel .side { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-left: 4px solid transparent; }
+  .duel .side.win { border-left-color: var(--green); background: rgba(127, 209, 139, 0.08); }
+  .duel .side .nm { width: 130px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; cursor: pointer; }
+  .duel .side .nm:hover { color: var(--acc); }
+  .duel .fish { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
+  .duel .f { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--dim); padding: 2px 6px; background: var(--bg); border-bottom: 2px solid var(--c); }
+  .duel .sum { font-family: "Press Start 2P", monospace; font-size: 11px; min-width: 40px; text-align: right; }
+  .duel .side.win .sum { color: var(--green); }
+  .duel .res { font-size: 13px; margin-top: 6px; color: var(--dim); }
+  .duel .res b { color: var(--green); }
+  .filter { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; color: var(--dim); font-size: 14px; }
+  .filter button { font: inherit; font-size: 13px; padding: 4px 10px; background: var(--card); color: var(--text); border: 2px solid var(--line); cursor: pointer; }
+  @media (max-width: 560px) { .duel .side { flex-wrap: wrap; } .duel .side .nm { width: auto; flex: 1; } .duel .fish { order: 3; flex-basis: 100%; } }
   footer { text-align: center; color: var(--dim); font-size: 13px; padding: 20px; }
   footer a { color: var(--acc); }
 </style>
@@ -76,6 +95,7 @@
 <nav>
   <button data-s="fame" class="on">HALL OF FAME</button>
   <button data-s="tops">LEADERBOARDS</button>
+  <button data-s="duels">DUELS</button>
   <button data-s="album">MY ALBUM</button>
 </nav>
 <main>
@@ -89,6 +109,12 @@
   </section>
   <section id="tops">
     <div class="boards" id="boards"></div>
+  </section>
+  <section id="duels">
+    <div class="boards" id="duelboards"></div>
+    <h2>FISHING DUELS · HISTORY</h2>
+    <div class="filter" id="duelfilter" hidden></div>
+    <div class="duels" id="duellist"></div>
   </section>
   <section id="album">
     <div class="find"><input id="who" placeholder="your Twitch nickname" autocomplete="off"><button id="go">SHOW</button></div>
@@ -192,10 +218,81 @@
       + board("MOST LOYAL · 🍀 STREAK", P.filter((p) => p.streak).sort((a, b) => b.streak - a.streak || b.best_streak - a.best_streak),
         (p) => `🍀${p.streak} · +${Math.min(p.streak, 10) * 10}%`)
       + board("RICHEST", P.filter((p) => !D.not_in_rich_top.includes(p.login)).sort((a, b) => b.coins - a.coins), (p) => p.coins.toLocaleString("en-US"));
-    document.querySelectorAll(".board .nm").forEach((n) => (n.onclick = () => openAlbum(n.dataset.u)));
+    document.querySelectorAll("#boards .nm").forEach((n) => (n.onclick = () => openAlbum(n.dataset.u)));
 
-    const u = new URLSearchParams(location.search).get("u");
-    if (u) { openAlbum(u); show("album"); }
+    renderDuels();
+    const q = new URLSearchParams(location.search);
+    if (q.get("u")) { openAlbum(q.get("u")); show("album"); }
+    else if (q.has("duels")) { renderDuels(q.get("duels")); show("duels"); }
+  }
+
+  // ---- fishing duels: who did best, then every duel, newest first, by day ----
+  function renderDuels(who) {
+    const all = [...(D.duels || [])].sort((a, b) => b.at - a.at);
+    const st = {};
+    for (const d of all) d.logins.forEach((l, s) => {
+      const p = (st[l] = st[l] || { login: l, name: d.names[s], duels: 0, wins: 0, net: 0 });
+      p.duels++;
+      if (d.winner === s) { p.wins++; p.net += d.stake; } else if (d.winner >= 0) p.net -= d.stake;
+    });
+    const S = Object.values(st);
+    const board = (title, list, val) => `<div class="card board"><h3>${title}</h3><ol>${list.length ? list.slice(0, 10).map((p, i) =>
+      `<li><span class="i">${i + 1}</span><span class="nm" data-u="${esc(p.login)}">${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
+      : `<li class="empty">no duels yet</li>`}</ol></div>`;
+    document.getElementById("duelboards").innerHTML =
+      board("MOST WINS", [...S].sort((a, b) => b.wins - a.wins || b.net - a.net), (p) => `${p.wins}/${p.duels}`)
+      + board("COINS WON IN DUELS", [...S].sort((a, b) => b.net - a.net), (p) => (p.net > 0 ? "+" : "") + p.net.toLocaleString("en-US"))
+      + board("BIGGEST STAKES", all.filter((d) => d.winner >= 0).sort((a, b) => b.stake - a.stake)
+        .map((d) => ({ login: d.logins[d.winner], name: `${d.names[d.winner]} vs ${d.names[1 - d.winner]}`, stake: d.stake })),
+        (p) => p.stake.toLocaleString("en-US"));
+
+    const q = String(who || "").toLowerCase();
+    const shown = q ? all.filter((d) => d.logins.includes(q)) : all;
+    const filter = document.getElementById("duelfilter");
+    filter.hidden = !q;
+    filter.innerHTML = q ? `only duels of <b>${esc((st[q] || { name: q }).name)}</b> <button>show all</button>` : "";
+    if (q) filter.querySelector("button").onclick = () => { history.replaceState(null, "", "?duels"); renderDuels(); };
+
+    const list = document.getElementById("duellist");
+    list.innerHTML = shown.length ? "" : `<div class="empty">no fishing duels yet — type <b>!fishduel @nick 300</b> in chat on the fishing scene</div>`;
+    let lastDay = "";
+    for (const d of shown.slice(0, 200)) {
+      const day = when(d.at);
+      if (day !== lastDay) { list.insertAdjacentHTML("beforeend", `<div class="day">${esc(day)}</div>`); lastDay = day; }
+      const card = document.createElement("div");
+      card.className = "card duel";
+      card.innerHTML = `<div class="hd"><span>⚔️ stake <b>${d.stake.toLocaleString("en-US")}</b></span><span>${clock(d.at)}</span></div>`;
+      d.names.forEach((n, s) => {
+        const side = document.createElement("div");
+        side.className = "side" + (d.winner === s ? " win" : "");
+        side.innerHTML = `<span class="nm" data-u="${esc(d.logins[s])}">${d.winner === s ? "🏆 " : ""}${esc(n)}</span>`;
+        const fish = document.createElement("div");
+        fish.className = "fish";
+        for (const id of d.fish[s]) {
+          const f = byId[id];
+          if (!f) continue;
+          const t = document.createElement("span");
+          t.className = "f";
+          t.style.setProperty("--c", priceColor(f));
+          t.title = f.name;
+          t.appendChild(big(f, 18));
+          t.insertAdjacentHTML("beforeend", `${f.price}`);
+          fish.appendChild(t);
+        }
+        side.appendChild(fish);
+        side.insertAdjacentHTML("beforeend", `<span class="sum">${d.totals[s]}</span>`);
+        card.appendChild(side);
+      });
+      card.insertAdjacentHTML("beforeend", d.winner >= 0
+        ? `<div class="res"><b>${esc(d.names[d.winner])}</b> won ${d.totals[d.winner]} : ${d.totals[1 - d.winner]} and took <b>+${d.stake.toLocaleString("en-US")}</b> from ${esc(d.names[1 - d.winner])}</div>`
+        : `<div class="res">a draw ${d.totals[0]} : ${d.totals[1]} · stakes back</div>`);
+      list.appendChild(card);
+    }
+    document.querySelectorAll("#duels .nm").forEach((n) => (n.onclick = () => {
+      history.replaceState(null, "", "?duels=" + encodeURIComponent(n.dataset.u));
+      renderDuels(n.dataset.u);
+      window.scrollTo({ top: document.getElementById("duellist").offsetTop - 120, behavior: "smooth" });
+    }));
   }
 
   // ---- one viewer's album ----
