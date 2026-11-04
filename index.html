@@ -122,7 +122,8 @@
   </section>
 </main>
 <footer>Fish on <a href="https://twitch.tv/langvaen">twitch.tv/langvaen</a>: type <b>!cast</b> in chat. 🍀 Every stream in a row
-  you fish on (at least one !cast): +10% luck for rare fish (up to +100%); a stream without fishing costs 30%. Updates every few minutes during the stream.</footer>
+  you fish on (at least one !cast): +5% luck for rare fish (up to +50%); a stream without fishing costs 15%.
+  Duels: rod + level + streak = Duel Power, the duel screen shows the real odds first. Updates every few minutes during the stream.</footer>
 <script src="fish-sprites.js"></script>
 <script>
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -216,7 +217,9 @@
       + board("COLLECTORS · KINDS CAUGHT", [...fishers].sort((a, b) => kinds(b) - kinds(a)), (p) => `${kinds(p)}/${D.fish.length}`)
       + board("MOST CASTS", [...fishers].sort((a, b) => b.casts - a.casts), (p) => p.casts)
       + board("MOST LOYAL · 🍀 STREAK", P.filter((p) => p.streak).sort((a, b) => b.streak - a.streak || b.best_streak - a.best_streak),
-        (p) => `🍀${p.streak} · +${Math.min(p.streak, 10) * 10}%`)
+        (p) => `🍀${p.streak} · +${Math.min(p.streak, 10) * 5}%`)
+      + board("TOP LEVELS · ⭐", [...fishers].filter((p) => p.level).sort((a, b) => b.xp - a.xp), (p) => `Lv ${p.level}`)
+      + board("DUEL POWER · ⚔️", [...fishers].filter((p) => p.power).sort((a, b) => b.power - a.power), (p) => p.power)
       + board("RICHEST", P.filter((p) => !D.not_in_rich_top.includes(p.login)).sort((a, b) => b.coins - a.coins), (p) => p.coins.toLocaleString("en-US"));
     document.querySelectorAll("#boards .nm").forEach((n) => (n.onclick = () => openAlbum(n.dataset.u)));
 
@@ -261,11 +264,14 @@
       if (day !== lastDay) { list.insertAdjacentHTML("beforeend", `<div class="day">${esc(day)}</div>`); lastDay = day; }
       const card = document.createElement("div");
       card.className = "card duel";
-      card.innerHTML = `<div class="hd"><span>⚔️ stake <b>${d.stake.toLocaleString("en-US")}</b></span><span>${clock(d.at)}</span></div>`;
+      card.innerHTML = `<div class="hd"><span>⚔️ stake <b>${d.stake.toLocaleString("en-US")}</b>${d.odds ? ` · odds ${d.odds[0]}% : ${d.odds[1]}%` : ""}`
+        + `${d.upset ? ` · <b>UPSET! +${d.bonus}</b>` : ""}</span><span>${clock(d.at)}</span></div>`;
       d.names.forEach((n, s) => {
         const side = document.createElement("div");
         side.className = "side" + (d.winner === s ? " win" : "");
-        side.innerHTML = `<span class="nm" data-u="${esc(d.logins[s])}">${d.winner === s ? "🏆 " : ""}${esc(n)}</span>`;
+        const sd = d.sides?.[s];
+        side.innerHTML = `<span class="nm" data-u="${esc(d.logins[s])}" title="${sd ? `Lv ${sd.level} · ${sd.rod} · 🍀${sd.streak} · power ${sd.power}${sd.bait ? " · bait" : ""}` : ""}">`
+          + `${d.winner === s ? "🏆 " : ""}${esc(n)}${sd ? ` <small style="color:var(--dim);font-weight:500">⚔️${sd.power}${sd.bait ? " 🪱" : ""}</small>` : ""}</span>`;
         const fish = document.createElement("div");
         fish.className = "fish";
         for (const id of d.fish[s]) {
@@ -311,7 +317,9 @@
     head.insertAdjacentHTML("beforeend", `<div class="stats"><h3>${esc(p.name)}</h3>
       <div class="stat"><span>kinds caught</span><b>${Object.keys(p.catch).length}/${D.fish.length}</b></div>
       <div class="stat"><span>casts</span><b>${p.casts}</b></div>
-      <div class="stat"><span>🍀 streak · luck</span><b>${p.streak || 0} · +${Math.min(p.streak || 0, 10) * 10}%</b></div>
+      <div class="stat"><span>🍀 streak · luck</span><b>${p.streak || 0} · +${Math.min(p.streak || 0, 10) * 5}%</b></div>
+      <div class="stat"><span>⭐ level</span><b>${p.level || 1}</b></div>
+      <div class="stat"><span>🎣 rod · ⚔️ power</span><b>${esc((p.rod || "stick").replace(/^./, (c) => c.toUpperCase()))} · ${p.power || 0}</b></div>
       <div class="stat"><span>best streak</span><b>${p.best_streak || 0}</b></div>
       <div class="stat"><span>fished out</span><b>${p.total}</b></div>
       <div class="stat"><span>coins</span><b>${p.coins.toLocaleString("en-US")}</b></div></div>`);
