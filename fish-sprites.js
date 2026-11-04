@@ -544,6 +544,33 @@ SKIN_SPRITES.detective = {  // a boy detective: spiky hair, big round glasses, b
   pal: { h: "#2a2a34", s: "#ffdbac", g: "#4a5262", w: "#ffffff", k: "#14161a", m: "#a0504a",
     c: "#2f5fb8", r: "#e8302a", q: "#9a1a18", p: "#5a6070", b: "#6a3a22" },
 };
+// rods (casino.py RODS, !rod buy): body, handle and a glint, the same on the pier, the duel and the shop
+const ROD_LOOK = {
+  stick: { b: "#6a4422", h: "#4a2e14" },
+  bamboo: { b: "#d8c070", h: "#7a5a22", n: "#8a7a3a" },  // n: bamboo knots
+  fiberglass: { b: "#5fd3ff", h: "#ffffff" },
+  carbon: { b: "#2a2d36", h: "#e8553d", n: "#6a7080" },
+  golden: { b: "#f5c542", h: "#b8862a", n: "#fff3a0" },
+};
+const rodLook = (id) => ROD_LOOK[id] || ROD_LOOK.stick;
+// a 12x12 rod icon: the rod from the handle (bottom left) to the tip, a reel, the line and the bobber
+const ROD_ICON = [
+  "...........b",
+  "..........nl",
+  ".........b.l",
+  "........b..l",
+  ".......n...l",
+  "......b....l",
+  ".....b.....o",
+  "....n......w",
+  "...brr......",
+  "..h.rr......",
+  ".h..........",
+  "h..........."];
+function rodIcon(id, scale) {
+  const L = rodLook(id);
+  return spriteCanvas(ROD_ICON, { b: L.b, n: L.n || L.b, h: L.h, r: "#a9b4c2", l: "#dfe6ee", o: "#e8553d", w: "#ffffff" }, scale);
+}
 // draws one angler: their bought skin, or the free one in their own look
 function drawAnglerSprite(ctx, login, skin, x, y, flip = false, scale = 1) {
   const own = SKIN_SPRITES[skin];
