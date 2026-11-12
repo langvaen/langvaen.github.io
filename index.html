@@ -276,14 +276,16 @@
     const q = new URLSearchParams(location.search);
     if (again) {  // new data while the page is open: stay on the tab, keep the album / duel filter
       if (q.get("u") && document.querySelector("nav button.on")?.dataset.s === "album") openAlbum(q.get("u"));
-      if (q.get("duels")) renderDuels(q.get("duels"));
+      if (q.get("duel")) renderDuels("", q.get("duel"));
+      else if (q.get("duels")) renderDuels(q.get("duels"));
     } else if (q.get("u")) { openAlbum(q.get("u")); show("album"); }
+    else if (q.has("duel")) { renderDuels("", q.get("duel")); show("duels"); }
     else if (q.has("duels")) { renderDuels(q.get("duels")); show("duels"); }
     else if (q.has("rules")) show("rules");
   }
 
   // ---- fishing duels: who did best, then every duel, newest first, by day ----
-  function renderDuels(who) {
+  function renderDuels(who, matchKey) {
     const all = [...(D.duels || [])].sort((a, b) => b.at - a.at);
     const records = duelLeaderboards(all);
     const st = {};
@@ -294,7 +296,7 @@
     });
     const S = Object.values(st);
     const board = (title, list, val) => `<div class="card board"><h3>${title}</h3><ol>${list.length ? list.slice(0, 10).map((p, i) =>
-      `<li><span class="i">${i + 1}</span><span class="nm" data-u="${esc(p.login)}">${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
+      `<li><span class="i">${i + 1}</span><span class="nm" ${p.duel ? `data-duel="${esc(p.duel)}"` : `data-u="${esc(p.login)}"`}>${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
       : `<li class="empty">no duels yet</li>`}</ol></div>`;
     document.getElementById("duelboards").innerHTML =
       board("MOST WINS", [...S].sort((a, b) => b.wins - a.wins || b.net - a.net), (p) => `${p.wins}/${p.duels}`)
@@ -303,16 +305,18 @@
         .map((d) => ({ login: d.logins[d.winner], name: `${d.names[d.winner]} vs ${d.names[1 - d.winner]}`, stake: d.stake })),
         (p) => p.stake.toLocaleString("en-US"))
       + board("BIGGEST DUEL CATCH · PAIR", records.combined.map((d) => ({
-        login: "", name: `${d.names[0]} + ${d.names[1]}`, total: d.total,
+        name: `${d.names[0]} + ${d.names[1]}`, total: d.total, duel: d.duel,
       })), (p) => p.total.toLocaleString("en-US"))
       + board("BIGGEST SOLO DUEL CATCH", records.individual, (p) => p.total.toLocaleString("en-US"));
 
     const q = String(who || "").toLowerCase();
-    const shown = q ? all.filter((d) => d.logins.includes(q)) : all;
+    const selected = matchKey ? duelByKey(all, matchKey) : null;
+    const shown = selected ? [selected] : q ? all.filter((d) => d.logins.includes(q)) : all;
     const filter = document.getElementById("duelfilter");
-    filter.hidden = !q;
-    filter.innerHTML = q ? `only duels of <b>${esc((st[q] || { name: q }).name)}</b> <button>show all</button>` : "";
-    if (q) filter.querySelector("button").onclick = () => { history.replaceState(null, "", "?duels"); renderDuels(); };
+    filter.hidden = !q && !selected;
+    filter.innerHTML = selected ? `selected match: <b>${esc(selected.names[0])} vs ${esc(selected.names[1])}</b> <button>show all</button>`
+      : q ? `only duels of <b>${esc((st[q] || { name: q }).name)}</b> <button>show all</button>` : "";
+    if (q || selected) filter.querySelector("button").onclick = () => { history.replaceState(null, "", location.pathname); renderDuels(); };
 
     const list = document.getElementById("duellist");
     list.innerHTML = shown.length ? "" : `<div class="empty">no fishing duels yet — type <b>!duel @nick 300</b> in chat on the fishing scene</div>`;
@@ -352,6 +356,11 @@
         : `<div class="res">a draw ${d.totals[0]} : ${d.totals[1]} · stakes back</div>`);
       list.appendChild(card);
     }
+    document.querySelectorAll("#duelboards .nm[data-duel]").forEach((n) => (n.onclick = () => {
+      history.replaceState(null, "", "?duel=" + encodeURIComponent(n.dataset.duel));
+      renderDuels("", n.dataset.duel);
+      window.scrollTo({ top: document.getElementById("duellist").offsetTop - 120, behavior: "smooth" });
+    }));
     document.querySelectorAll("#duels .nm[data-u]").forEach((n) => (n.onclick = () => {
       history.replaceState(null, "", "?duels=" + encodeURIComponent(n.dataset.u));
       renderDuels(n.dataset.u);
