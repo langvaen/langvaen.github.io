@@ -170,6 +170,7 @@
   you fish on (at least one !cast): +5% luck for rare fish (up to +50%); a stream without fishing costs 15%. Each rod level (!rod buy) adds +20% more (Golden Rod +80%).
   Duels: rod + level + streak = Duel Power, the duel screen shows the real odds first. Updates every few minutes during the stream.</footer>
 <script src="fish-sprites.js"></script>
+<script src="duel-leaderboards.js"></script>
 <script>
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const when = (t) => (t ? new Date(t * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "long ago");
@@ -256,7 +257,7 @@
     // leaderboards
     const P = D.players;
     const board = (title, list, val) => `<div class="card board"><h3>${title}</h3><ol>${list.length ? list.slice(0, 10).map((p, i) =>
-      `<li><span class="i">${i + 1}</span><span class="nm" data-u="${esc(p.login)}">${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
+      `<li><span class="i">${i + 1}</span><span${p.login ? ` class="nm" data-u="${esc(p.login)}"` : ""}>${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
       : `<li class="empty">nobody yet</li>`}</ol></div>`;
     const fishers = P.filter((p) => p.total && !D.not_in_fish_top.includes(p.login));
     const kinds = (p) => Object.keys(p.catch).length;
@@ -284,6 +285,7 @@
   // ---- fishing duels: who did best, then every duel, newest first, by day ----
   function renderDuels(who) {
     const all = [...(D.duels || [])].sort((a, b) => b.at - a.at);
+    const records = duelLeaderboards(all);
     const st = {};
     for (const d of all) d.logins.forEach((l, s) => {
       const p = (st[l] = st[l] || { login: l, name: d.names[s], duels: 0, wins: 0, net: 0 });
@@ -299,7 +301,11 @@
       + board("COINS WON IN DUELS", [...S].sort((a, b) => b.net - a.net), (p) => (p.net > 0 ? "+" : "") + p.net.toLocaleString("en-US"))
       + board("BIGGEST STAKES", all.filter((d) => d.winner >= 0).sort((a, b) => b.stake - a.stake)
         .map((d) => ({ login: d.logins[d.winner], name: `${d.names[d.winner]} vs ${d.names[1 - d.winner]}`, stake: d.stake })),
-        (p) => p.stake.toLocaleString("en-US"));
+        (p) => p.stake.toLocaleString("en-US"))
+      + board("BIGGEST DUEL CATCH · PAIR", records.combined.map((d) => ({
+        login: "", name: `${d.names[0]} + ${d.names[1]}`, total: d.total,
+      })), (p) => p.total.toLocaleString("en-US"))
+      + board("BIGGEST SOLO DUEL CATCH", records.individual, (p) => p.total.toLocaleString("en-US"));
 
     const q = String(who || "").toLowerCase();
     const shown = q ? all.filter((d) => d.logins.includes(q)) : all;
@@ -346,7 +352,7 @@
         : `<div class="res">a draw ${d.totals[0]} : ${d.totals[1]} · stakes back</div>`);
       list.appendChild(card);
     }
-    document.querySelectorAll("#duels .nm").forEach((n) => (n.onclick = () => {
+    document.querySelectorAll("#duels .nm[data-u]").forEach((n) => (n.onclick = () => {
       history.replaceState(null, "", "?duels=" + encodeURIComponent(n.dataset.u));
       renderDuels(n.dataset.u);
       window.scrollTo({ top: document.getElementById("duellist").offsetTop - 120, behavior: "smooth" });
