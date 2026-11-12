@@ -25,7 +25,12 @@
     return (duels || []).find((duel) => String(duel.at) === String(key));
   }
 
+  function duelHref(key) {
+    return "?duel=" + encodeURIComponent(String(key));
+  }
+
   root.duelLeaderboards = duelLeaderboards;
   root.duelByKey = duelByKey;
-  if (typeof module !== "undefined") module.exports = { duelLeaderboards, duelByKey };
+  root.duelHref = duelHref;
+  if (typeof module !== "undefined") module.exports = { duelLeaderboards, duelByKey, duelHref };
 })(typeof window === "undefined" ? globalThis : window);
