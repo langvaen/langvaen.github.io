@@ -44,6 +44,7 @@
   .board li .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
   .board li .nm:hover { color: var(--acc); }
   .board li .v { color: var(--green); }
+  .board li .duel-link { display: flex; align-items: center; gap: 10px; width: 100%; color: inherit; text-decoration: none; }
   .rare { display: flex; flex-direction: column; gap: 6px; }
   .rare .row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; background: var(--card); border-left: 4px solid var(--c); font-size: 15px; }
   .rare .row .t { color: var(--dim); font-size: 13px; margin-left: auto; white-space: nowrap; }
@@ -296,7 +297,9 @@
     });
     const S = Object.values(st);
     const board = (title, list, val) => `<div class="card board"><h3>${title}</h3><ol>${list.length ? list.slice(0, 10).map((p, i) =>
-      `<li><span class="i">${i + 1}</span><span class="nm" ${p.duel ? `data-duel="${esc(p.duel)}"` : `data-u="${esc(p.login)}"`}>${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
+      p.duel
+        ? `<li><a class="duel-link" data-duel="${esc(p.duel)}" href="${esc(duelHref(p.duel))}" aria-label="Show this duel"><span class="i">${i + 1}</span><span class="nm">${esc(p.name)}</span><span class="v">${val(p)}</span></a></li>`
+        : `<li><span class="i">${i + 1}</span><span class="nm" data-u="${esc(p.login)}">${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
       : `<li class="empty">no duels yet</li>`}</ol></div>`;
     document.getElementById("duelboards").innerHTML =
       board("MOST WINS", [...S].sort((a, b) => b.wins - a.wins || b.net - a.net), (p) => `${p.wins}/${p.duels}`)
@@ -356,7 +359,8 @@
         : `<div class="res">a draw ${d.totals[0]} : ${d.totals[1]} · stakes back</div>`);
       list.appendChild(card);
     }
-    document.querySelectorAll("#duelboards .nm[data-duel]").forEach((n) => (n.onclick = () => {
+    document.querySelectorAll("#duelboards .duel-link[data-duel]").forEach((n) => (n.onclick = (event) => {
+      event.preventDefault();
       history.replaceState(null, "", "?duel=" + encodeURIComponent(n.dataset.duel));
       renderDuels("", n.dataset.duel);
       window.scrollTo({ top: document.getElementById("duellist").offsetTop - 120, behavior: "smooth" });
