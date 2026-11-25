@@ -394,6 +394,7 @@
     head.appendChild(anglerCanvas(p.login, p.skin, 5));
     const amount = (value) => Number.isFinite(value) ? value.toLocaleString("en-US") : "—";
     const since = D.bonus_tracking_since;
+    const give = p.give;
     head.insertAdjacentHTML("beforeend", `<div class="stats"><h3>${esc(p.name)}</h3>
       <div class="stat"><span>kinds caught</span><b>${Object.keys(p.catch).length}/${D.fish.length}</b></div>
       <div class="stat"><span>casts</span><b>${p.casts}</b></div>
@@ -406,7 +407,11 @@
       <div class="stat"><span>spent on rods</span><b>${amount(p.rod_spent)}</b></div>
       ${since ? `<div class="stat"><span>first-message bonuses</span><b>${amount((p.wallet_bonuses?.first_message ?? 0) + (p.wallet_bonuses?.legacy_first_message ?? 0))}</b></div>
       <div class="stat"><span>Payday bonuses</span><b>${amount(p.wallet_bonuses?.payday ?? 0)}</b></div>
-      <p class="stats-note">Welcome bonuses include amounts recovered from older snapshots. Payday tracked since ${new Date(since * 1000).toLocaleDateString("en-GB", { timeZone: "Asia/Yekaterinburg" })}.</p>` : ""}</div>`);
+      <p class="stats-note">Welcome bonuses include amounts recovered from older snapshots. Payday tracked since ${new Date(since * 1000).toLocaleDateString("en-GB", { timeZone: "Asia/Yekaterinburg" })}.</p>` : ""}
+      ${give?.reconciliation ? `<div class="stat"><span>Give · legacy wallet adjustment</span><b>${amount(give.reconciliation.wallet)}</b></div>
+      <div class="stat"><span>Give · legacy fishing adjustment</span><b>${amount(give.reconciliation.fishing)}</b></div>` : ""}
+      ${give?.chat_count ? `<div class="stat"><span>!give in chat · wallet</span><b>${amount(give.chat_wallet)}</b></div>
+      <div class="stat"><span>!give in chat · fishing score</span><b>${amount(give.chat_fishing)}</b></div>` : ""}</div>`);
     mine.appendChild(head);
     mine.insertAdjacentHTML("beforeend", "<h2>ALBUM</h2>");
     const grid = document.createElement("div");
