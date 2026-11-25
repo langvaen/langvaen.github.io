@@ -66,6 +66,7 @@
   .me .stat { background: var(--bg); padding: 10px; }
   .me .stat b { display: block; font-family: "Press Start 2P", monospace; font-size: 14px; color: var(--acc); margin-top: 6px; }
   .me .stat span { color: var(--dim); font-size: 13px; }
+  .me .stats-note { grid-column: 1 / -1; margin: 0; color: var(--dim); font-size: 13px; }
   .me h3 { width: 100%; margin: 0; font-family: "Press Start 2P", monospace; font-size: 14px; }
   .empty { color: var(--dim); font-size: 14px; padding: 8px 0; }
   .rulebox { font-size: 15px; line-height: 1.6; }
@@ -391,6 +392,8 @@
     const head = document.createElement("div");
     head.className = "card me";
     head.appendChild(anglerCanvas(p.login, p.skin, 5));
+    const amount = (value) => Number.isFinite(value) ? value.toLocaleString("en-US") : "—";
+    const since = D.bonus_tracking_since;
     head.insertAdjacentHTML("beforeend", `<div class="stats"><h3>${esc(p.name)}</h3>
       <div class="stat"><span>kinds caught</span><b>${Object.keys(p.catch).length}/${D.fish.length}</b></div>
       <div class="stat"><span>casts</span><b>${p.casts}</b></div>
@@ -398,8 +401,12 @@
       <div class="stat"><span>⭐ level</span><b>${p.level || 1}</b></div>
       <div class="stat"><span>🎣 rod · ⚔️ power</span><b>${esc((p.rod || "stick").replace(/^./, (c) => c.toUpperCase()))} · ${p.power || 0}</b></div>
       <div class="stat"><span>best streak</span><b>${p.best_streak || 0}</b></div>
-      <div class="stat"><span>fished out</span><b>${p.total}</b></div>
-      <div class="stat"><span>coins</span><b>${p.coins.toLocaleString("en-US")}</b></div></div>`);
+      <div class="stat"><span>fishing score</span><b>${amount(p.fishing_score ?? p.total)}</b></div>
+      <div class="stat"><span>wallet · !coins</span><b>${amount(p.coins)}</b></div>
+      <div class="stat"><span>spent on rods</span><b>${amount(p.rod_spent)}</b></div>
+      ${since ? `<div class="stat"><span>first-message bonuses</span><b>${amount(p.wallet_bonuses?.first_message ?? 0)}</b></div>
+      <div class="stat"><span>Payday bonuses</span><b>${amount(p.wallet_bonuses?.payday ?? 0)}</b></div>
+      <p class="stats-note">Bonus totals tracked since ${new Date(since * 1000).toLocaleDateString("en-GB", { timeZone: "Asia/Yekaterinburg" })}.</p>` : ""}</div>`);
     mine.appendChild(head);
     mine.insertAdjacentHTML("beforeend", "<h2>ALBUM</h2>");
     const grid = document.createElement("div");
