@@ -261,9 +261,14 @@
       `<li><span class="i">${i + 1}</span><span${p.login ? ` class="nm" data-u="${esc(p.login)}"` : ""}>${esc(p.name)}</span><span class="v">${val(p)}</span></li>`).join("")
       : `<li class="empty">nobody yet</li>`}</ol></div>`;
     const fishers = P.filter((p) => p.total && !D.not_in_fish_top.includes(p.login));
+    const rodValue = (p) => p.rod_value || 0;
+    const walletFishers = P.filter((p) => p.fish_ranked ?? fishers.includes(p)).sort((a, b) =>
+      b.coins + rodValue(b) - a.coins - rodValue(a) || b.coins - a.coins);
+    const fmtCoins = (coins) => coins.toLocaleString("en-US");
     const kinds = (p) => Object.keys(p.catch).length;
     document.getElementById("boards").innerHTML =
-      board("BEST FISHERS · COINS FISHED", [...fishers].sort((a, b) => b.total - a.total), (p) => p.total)
+      board("BEST FISHERS · BALANCE + ROD", walletFishers, (p) => fmtCoins(p.coins)
+        + (rodValue(p) ? ` <small>+ ${fmtCoins(rodValue(p))} 🎣</small>` : ""))
       + board("COLLECTORS · KINDS CAUGHT", [...fishers].sort((a, b) => kinds(b) - kinds(a)), (p) => `${kinds(p)}/${D.fish.length}`)
       + board("MOST CASTS", [...fishers].sort((a, b) => b.casts - a.casts), (p) => p.casts)
       + board("MOST LOYAL · 🍀 STREAK", P.filter((p) => p.streak).sort((a, b) => b.streak - a.streak || b.best_streak - a.best_streak),
