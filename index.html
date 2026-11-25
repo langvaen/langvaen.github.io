@@ -171,7 +171,7 @@
   you fish on (at least one !cast): +5% luck for rare fish (up to +50%); a stream without fishing costs 15%. Each rod level (!rod buy) adds +20% more (Golden Rod +80%).
   Duels: rod + level + streak = Duel Power, the duel screen shows the real odds first. Updates every few minutes during the stream.</footer>
 <script src="fish-sprites.js"></script>
-<script src="duel-leaderboards.js"></script>
+<script src="duel-leaderboards.js?v=2"></script>
 <script>
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const when = (t) => (t ? new Date(t * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "long ago");
@@ -288,9 +288,12 @@
   // ---- fishing duels: who did best, then every duel, newest first, by day ----
   function renderDuels(who, matchKey) {
     const all = [...(D.duels || [])].sort((a, b) => b.at - a.at);
-    const records = duelLeaderboards(all);
+    const resets = new Map(D.players.filter((p) => p.stats_reset_at).map((p) => [p.login, p.stats_reset_at]));
+    const rankedSide = (d, side) => Number(d.at) >= (resets.get(d.logins?.[side]) || 0);
+    const records = duelLeaderboards(all, rankedSide);
     const st = {};
     for (const d of all) d.logins.forEach((l, s) => {
+      if (!rankedSide(d, s)) return;
       const p = (st[l] = st[l] || { login: l, name: d.names[s], duels: 0, wins: 0, net: 0 });
       p.duels++;
       if (d.winner === s) { p.wins++; p.net += d.stake; } else if (d.winner >= 0) p.net -= d.stake;
@@ -304,7 +307,7 @@
     document.getElementById("duelboards").innerHTML =
       board("MOST WINS", [...S].sort((a, b) => b.wins - a.wins || b.net - a.net), (p) => `${p.wins}/${p.duels}`)
       + board("COINS WON IN DUELS", [...S].sort((a, b) => b.net - a.net), (p) => (p.net > 0 ? "+" : "") + p.net.toLocaleString("en-US"))
-      + board("BIGGEST STAKES", all.filter((d) => d.winner >= 0).sort((a, b) => b.stake - a.stake)
+      + board("BIGGEST STAKES", all.filter((d) => d.winner >= 0 && rankedSide(d, 0) && rankedSide(d, 1)).sort((a, b) => b.stake - a.stake)
         .map((d) => ({ login: d.logins[d.winner], name: `${d.names[d.winner]} vs ${d.names[1 - d.winner]}`, stake: d.stake })),
         (p) => p.stake.toLocaleString("en-US"))
       + board("BIGGEST DUEL CATCH · PAIR", records.combined.map((d) => ({
